@@ -4,7 +4,12 @@ library(textstem)
 library(topicmodels)
 library(reshape2)
 speeches=read.csv("presidential_speeches_sample.csv")
+speeches$content <- recode(speeches$content,"health care"="healthcare")
 tokenized = unnest_tokens(speeches, word, content)
+custom_stop_words = bind_rows(
+  stop_words, tibble(word=c("president","jennings","people","lot","country",
+  ))
+)
 tokenized = anti_join(tokenized, custom_stop_words, by="word")
 tokenized = mutate(tokenized, lemma=lemmatize_words(word))
 word_counts = group_by(tokenized, document, lemma) %>% summarize(count=n())
