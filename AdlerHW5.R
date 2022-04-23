@@ -3,6 +3,9 @@ library(tidytext)
 library(textstem)
 library(topicmodels)
 library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(ggeasy)
 speeches=read.csv("presidential_speeches_sample.csv")
 speeches$content <- recode(speeches$content,"health care"="healthcare")
 tokenized = unnest_tokens(speeches, word, content)
@@ -21,13 +24,16 @@ ggplot(topics, aes(y=reorder_within(term, beta, topic), x=beta)) +
   geom_col() +
   facet_wrap(~topic, scales="free") +
   scale_y_reordered()
-##the correct line is one of the following two, but they both produce an even number of rows per topic, making this
-##analysis entirely useless?
-#speech_topics = tidy(speech_topic_model,matrix="gamma")
-#speech_topics = tidy(speech_topic_model,matrix="gamma") %>% group_by(topic) %>% slice_max(gamma, n=10)
+speech_topics = tidy(speech_topic_model,matrix="gamma")
 speech_topics$year = as.numeric(c(str_extract(speech_topics$document,"(?<=\\()[:digit:]+(?=-)")))
-speeches_by_year = speech_topics %>% group_by(year) %>% summarize(count=n())
-topic4_analysis = group_by(filter(speech_topics, topic==4),year) %>% summarise(avg=(speeches_by_year/n()))
-topic6_analysis = group_by(filter(speech_topics, topic==6),year) %>% summarise(count=mean(n()))
-topic7_analysis = group_by(filter(speech_topics, topic==7),year) %>% summarise(count=mean(n()))
-topic8_analysis = group_by(filter(speech_topics, topic==8),year) %>% summarise(count=mean(n()))
+topic4_analysis = group_by(filter(speech_topics, topic==4),year) %>% summarise(avg_gamma=mean(gamma))
+topic6_analysis = group_by(filter(speech_topics, topic==6),year) %>% summarise(avg_gamma=mean(gamma))
+topic7_analysis = group_by(filter(speech_topics, topic==7),year) %>% summarise(avg_gamma=mean(gamma))
+topic8_analysis = group_by(filter(speech_topics, topic==8),year) %>% summarise(avg_gamma=mean(gamma))
+grid.arrange(
+  ggplot(topic4_analysis,aes(x=year,y=avg_gamma)) + geom_line(color='brown') + ggtitle("Middle East") + easy_center_title(),
+  ggplot(topic6_analysis,aes(x=year,y=avg_gamma)) + geom_line(color='blue') + ggtitle("Sports") + easy_center_title(),
+  ggplot(topic7_analysis,aes(x=year,y=avg_gamma)) + geom_line(color='red') + ggtitle("Healthcare") + easy_center_title(),
+  ggplot(topic8_analysis,aes(x=year,y=avg_gamma)) + geom_line(color='green') + ggtitle("Trade") + easy_center_title(),
+  nrow=2
+)
