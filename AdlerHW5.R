@@ -21,3 +21,13 @@ ggplot(topics, aes(y=reorder_within(term, beta, topic), x=beta)) +
   geom_col() +
   facet_wrap(~topic, scales="free") +
   scale_y_reordered()
+##the correct line is one of the following two, but they both produce an even number of rows per topic, making this
+##analysis entirely useless?
+#speech_topics = tidy(speech_topic_model,matrix="gamma")
+#speech_topics = tidy(speech_topic_model,matrix="gamma") %>% group_by(topic) %>% slice_max(gamma, n=10)
+speech_topics$year = as.numeric(c(str_extract(speech_topics$document,"(?<=\\()[:digit:]+(?=-)")))
+speeches_by_year = speech_topics %>% group_by(year) %>% summarize(count=n())
+topic4_analysis = group_by(filter(speech_topics, topic==4),year) %>% summarise(avg=(speeches_by_year/n()))
+topic6_analysis = group_by(filter(speech_topics, topic==6),year) %>% summarise(count=mean(n()))
+topic7_analysis = group_by(filter(speech_topics, topic==7),year) %>% summarise(count=mean(n()))
+topic8_analysis = group_by(filter(speech_topics, topic==8),year) %>% summarise(count=mean(n()))
