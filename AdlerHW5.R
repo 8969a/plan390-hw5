@@ -17,6 +17,7 @@ tokenized = anti_join(tokenized, custom_stop_words, by="word")
 tokenized = mutate(tokenized, lemma=lemmatize_words(word))
 word_counts = group_by(tokenized, document, lemma) %>% summarize(count=n())
 word_matrix = cast_dtm(word_counts, document, lemma, count)
+#this line will take you like 30 minutes to run
 speech_topic_model = LDA(word_matrix, 24, control=list(seed=18))
 beta_matrix = tidy(speech_topic_model,matrix="beta")
 topics=group_by(beta_matrix, topic) %>% slice_max(beta, n=10)
