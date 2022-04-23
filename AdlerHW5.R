@@ -37,3 +37,9 @@ grid.arrange(
   ggplot(topic8_analysis,aes(x=year,y=avg_gamma)) + geom_line(color='green') + ggtitle("Trade") + easy_center_title(),
   nrow=2
 )
+speech_topics$party <- c(str_extract(speech_topics$document,"^.+(?=:)"))
+#need this line because line 40 kept resulting in two entries of "Jimmy Carter: Italy" that I had no way to fix
+speech_topics <- mutate(speech_topics,party=str_replace(party,": Italy",""))
+speech_topics$party <- recode(speech_topics$party,"Jimmy Carter"="D","Ronald Reagan"="R","George Bush"="R","William J. Clinton"="D","George W. Bush"="R","Barack Obama"="D")
+topics_by_party = speech_topics %>% group_by(topic,party) %>% summarise(avg_gamma=mean(gamma))
+ggplot(topics_by_party,aes(x=topic,y=avg_gamma,fill=party)) + geom_bar(stat="identity",position="dodge")
